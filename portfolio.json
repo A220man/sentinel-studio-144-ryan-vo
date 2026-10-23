@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "sentinel-studio-144-ryan-vo",
+  "owner": "A220man",
+  "email": "ryandtvo@gmail.com",
+  "domain": "AI/ML developer tools",
+  "summary": "Work in progress: sentinel-studio-144-ryan-vo",
+  "workflows": [
+    "Create and manage code reviews with diff analysis and line-level findings",
+    "Export reviews in JSON, SARIF, and Markdown formats for CI/CD integration",
+    "Authenticate via Keycloak OIDC with role-based access control"
+  ],
+  "auth": "oidc-keycloak-saml-broker",
+  "llm_providers": [
+    "openai-compatible",
+    "anthropic",
+    "gemini",
+    "ollama"
+  ],
+  "status": "work-in-progress"
+}

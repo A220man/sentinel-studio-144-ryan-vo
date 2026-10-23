@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel-studio"
+version = "1.0.0"
+description = "Hybrid deterministic + LLM code review platform"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Ryan Vo", email = "ryandtvo@gmail.com"}
+]
+maintainers = [
+    {name = "Ryan Vo", email = "ryandtvo@gmail.com"}
+]
+keywords = ["code-review", "static-analysis", "security", "llm", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Security",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.32.0",
+    "sqlalchemy==2.0.35",
+    "alembic==1.13.2",
+    "pydantic==2.9.2",
+    "pydantic-settings==2.5.2",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-multipart==0.0.9",
+    "httpx==0.27.2",
+    "python-dotenv==1.0.1",
+    "aiofiles==24.1.0",
+    "python-slugify==8.0.4",
+    "doublestar==0.2.5",
+    "pyyaml==6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.23.7",
+    "pytest-httpx==0.27.0",
+    "httpx-mock==0.16.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
