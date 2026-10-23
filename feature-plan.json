@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "current_feature": "continue-implementation",
+  "features": [
+    {
+      "id": "continue-implementation",
+      "title": "Continue implementation and resolve known failures",
+      "status": "in_progress",
+      "acceptance": [
+        "Run checks, fix failures, and implement the next planned feature"
+      ],
+      "implementation": [],
+      "tests": []
+    }
+  ]
+}

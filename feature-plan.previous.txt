@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "current_feature": "core-skeleton",
+  "features": [
+    {
+      "id": "core-skeleton",
+      "title": "Core FastAPI/React skeleton with auth and DB",
+      "status": "done",
+      "acceptance": [
+        "FastAPI app starts and serves health endpoint",
+        "React app builds and serves frontend",
+        "SQLite database with migrations",
+        "OIDC Keycloak auth configured (backend sessions + HttpOnly cookies)",
+        "Docker compose with backend, frontend, Keycloak, postgres",
+        "CI workflow runs backend/frontend tests and builds"
+      ],
+      "implementation": [
+        "backend/app/main.py",
+        "backend/app/core/config.py",
+        "backend/app/core/database.py",
+        "backend/app/core/security.py",
+        "backend/app/core/auth.py",
+        "backend/app/models/__init__.py",
+        "backend/app/api/deps.py",
+        "backend/app/api/routes/health.py",
+        "backend/app/api/routes/auth.py",
+        "backend/app/api/routes/users.py",
+        "backend/app/api/routes/reviews.py",
+        "backend/app/schemas/auth.py",
+        "backend/app/schemas/review.py",
+        "backend/requirements.txt",
+        "backend/Dockerfile",
+        "backend/.dockerignore",
+        "backend/alembic/env.py",
+        "backend/alembic/script.py.mako",
+        "frontend/src/main.tsx",
+        "frontend/src/App.tsx",
+        "frontend/src/api/client.ts",
+        "frontend/src/api/types.ts",
+        "frontend/src/hooks/useAuth.ts",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/components/LoadingError.tsx",
+        "frontend/src/pages/Dashboard.tsx",
+        "frontend/src/pages/Login.tsx",
+        "frontend/src/pages/ReviewDetail.tsx",
+        "frontend/src/styles/globals.css",
+        "frontend/package.json",
+        "frontend/vite.config.ts",
+        "frontend/tsconfig.json",
+        "frontend/Dockerfile",
+        "frontend/.dockerignore",
+        "compose.yaml",
+        ".github/workflows/ci.yml"
+      ],
+      "tests": [
+        "backend/tests/test_health.py",
+        "backend/tests/test_auth.py",
+        "backend/tests/test_reviews.py",
+        "backend/tests/conftest.py",
+        "frontend/tests/App.test.tsx",
+        "frontend/tests/Dashboard.test.tsx",
+        "frontend/tests/setup.ts",
+        "frontend/vitest.config.ts"
+      ]
+    }
+    {
+      "id": "code-review-engine",
+      "title": "Deterministic code review engine with rule packs",
+      "status": "planned",
+      "acceptance": [
+        "Rule pack loader for multi-language rules",
+        "AST-based deterministic analyzers (NPE, SQLi, XSS, thread-safety)",
+        "Line-level comment generation",
+        "Diff parsing and hunk mapping"
+      ],
+      "implementation": [],
+      "tests": []
+    },
+    {
+      "id": "llm-agent-review",
+      "title": "LLM Agent review with opt-in advisory explanations",
+      "status": "planned",
+      "acceptance": [
+        "OpenAI-compatible, Anthropic, Gemini, Ollama adapters",
+        "Provider errors surfaced clearly",
+        "Explanations labeled advisory, grounded in findings",
+        "Configurable provider/model/endpoint"
+      ],
+      "implementation": [],
+      "tests": []
+    },
+    {
+      "id": "review-workflows",
+      "title": "Three complete review workflows",
+      "status": "planned",
+      "acceptance": [
+        "PR diff review (create/import/search/detail/export)",
+        "Repository scan with baseline comparison",
+        "CI/CD gate integration with quality thresholds"
+      ],
+      "implementation": [],
+      "tests": []
+    },
+    {
+      "id": "frontend-dashboard",
+      "title": "React dashboard with review management UI",
+      "status": "planned",
+      "acceptance": [
+        "Domain dashboard with loading/error/empty states",
+        "Review list, detail, create, import, search, export",
+        "Typed API client from backend routes",
+        "Responsive professional UI"
+      ],
+      "implementation": [],
+      "tests": []
+    }
+  ]
+}

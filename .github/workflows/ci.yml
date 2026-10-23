@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '24'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements.txt
+          .venv/bin/pip install pytest pytest-asyncio pytest-httpx httpx-mock
+
+      - name: Run tests
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          SECRET_KEY: "test-secret-key-min-32-characters-long"
+          KEYCLOAK_URL: "http://localhost:8080"
+          KEYCLOAK_REALM: "test"
+          KEYCLOAK_CLIENT_ID: "test-client"
+          KEYCLOAK_CLIENT_SECRET: "test-secret"
+          KEYCLOAK_REDIRECT_URI: "http://localhost:8000/auth/callback"
+          DEBUG: "true"
+        run: |
+          PYTHONPATH=. .venv/bin/pytest tests/ -v --tb=short
+
+  frontend-test:
+    name: Frontend Tests & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typecheck
+        run: npm run build 2>&1 | head -50
+
+      - name: Run tests
+        run: npm test
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          tags: sentinel-backend:latest
+          load: true
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          tags: sentinel-frontend:latest
+          load: true
+
+      - name: Test backend image
+        run: |
+          docker run --rm -d --name test-backend \
+            -e DATABASE_URL="sqlite+aiosqlite:///:memory:" \
+            -e SECRET_KEY="test-secret-key-min-32-characters-long" \
+            -e KEYCLOAK_URL="http://localhost:8080" \
+            -e KEYCLOAK_REALM="test" \
+            -e KEYCLOAK_CLIENT_ID="test-client" \
+            -e KEYCLOAK_CLIENT_SECRET="test-secret" \
+            -e KEYCLOAK_REDIRECT_URI="http://localhost:8000/auth/callback" \
+            -e DEBUG="true" \
+            -p 8000:8000 \
+            sentinel-backend:latest
+          sleep 5
+          curl -f http://localhost:8000/healthz
+          docker stop test-backend
+
+      - name: Test frontend image
+        run: |
+          docker run --rm -d --name test-frontend \
+            -p 5173:80 \
+            sentinel-frontend:latest
+          sleep 3
+          curl -f http://localhost:5173/
+          docker stop test-frontend
