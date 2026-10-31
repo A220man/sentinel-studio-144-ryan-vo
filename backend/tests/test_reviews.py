@@ -218,3 +218,80 @@ async def test_create_finding(client: AsyncClient, test_user, auth_headers_with_
     assert data["title"] == finding_data["title"]
     assert data["severity"] == "critical"
     assert data["review_id"] == review.id
+
+
+@pytest.mark.asyncio
+async def test_import_review(client: AsyncClient, test_user, auth_headers_with_csrf, db_session):
+    # Create a review to export first
+    from app.models import Finding, FindingSeverity, FindingCategory
+    review = Review(
+        author_id=test_user.id,
+        title="Original Review",
+        base_branch="main",
+        head_branch="feature/test",
+        repository_url="https://github.com/test/repo",
+    )
+    db_session.add(review)
+    await db_session.commit()
+    await db_session.refresh(review)
+
+    finding = Finding(
+        review_id=review.id,
+        title="Test Finding",
+        file_path="src/main.py",
+        start_line=10,
+        end_line=20,
+        severity=FindingSeverity.HIGH,
+        category=FindingCategory.BUG,
+        description="A test finding",
+        suggestion="Fix it",
+        rule_id="TEST-001",
+    )
+    db_session.add(finding)
+    await db_session.commit()
+
+    # Export the review as JSON
+    export_response = await client.post(
+        f"/reviews/{review.id}/export",
+        json={"review_id": review.id, "format": "json"},
+        headers=auth_headers_with_csrf,
+    )
+    assert export_response.status_code == 200
+    export_data = export_response.json()
+
+    # Import the review
+    import_response = await client.post(
+        "/reviews/import",
+        json={"content": export_data["content"], "format": "json"},
+        headers=auth_headers_with_csrf,
+    )
+    assert import_response.status_code == 201
+    data = import_response.json()
+    assert data["title"] == "Original Review"
+    assert data["repository_url"] == "https://github.com/test/repo"
+    assert len(data["findings"]) == 1
+    assert data["findings"][0]["title"] == "Test Finding"
+    assert data["findings"][0]["severity"] == "high"
+    assert data["author_id"] == test_user.id
+
+
+@pytest.mark.asyncio
+async def test_import_review_invalid_json(client: AsyncClient, auth_headers_with_csrf):
+    import_response = await client.post(
+        "/reviews/import",
+        json={"content": "not valid json", "format": "json"},
+        headers=auth_headers_with_csrf,
+    )
+    assert import_response.status_code == 400
+    assert "Invalid JSON" in import_response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_import_review_missing_title(client: AsyncClient, auth_headers_with_csrf):
+    import_response = await client.post(
+        "/reviews/import",
+        json={"content": '{"repository_url": "https://github.com/test/repo"}', "format": "json"},
+        headers=auth_headers_with_csrf,
+    )
+    assert import_response.status_code == 400
+    assert "Missing required field: title" in import_response.json()["detail"]

@@ -142,3 +142,12 @@ class ReviewExportResponse(BaseModel):
     content: str
     filename: str
     media_type: str
+
+
+class ReviewImportRequest(BaseModel):
+    content: str = Field(..., min_length=1)
+    format: str = Field("json", pattern="^(json)$")
+
+
+class ReviewImportResponse(ReviewDetailResponse):
+    pass

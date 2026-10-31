@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.0.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
@@ -37,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alembic migrations for schema management
 
 ## [Unreleased]
+
+### Added
+- Review import from JSON files via API (`POST /reviews/import`)
+- Import button with file picker in Dashboard UI
+- Validation for imported JSON (required title field, valid JSON format)
 
 ### Planned
 - Deterministic multi-language rule engine (NPE, SQLi, XSS, thread-safety)

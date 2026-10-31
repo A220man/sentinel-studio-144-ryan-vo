@@ -15,6 +15,8 @@ from app.schemas.review import (
     PaginatedReviews,
     ReviewExportRequest,
     ReviewExportResponse,
+    ReviewImportRequest,
+    ReviewImportResponse,
     FindingResponse,
     FindingCreate,
     FindingUpdate,
@@ -268,6 +270,74 @@ async def export_review(
         )
 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid format")
+
+
+@router.post("/import", response_model=ReviewImportResponse, status_code=status.HTTP_201_CREATED)
+async def import_review(
+    request: Request,
+    import_data: ReviewImportRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    _: None = Depends(verify_csrf),
+) -> ReviewImportResponse:
+    import json
+    try:
+        data = json.loads(import_data.content)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON content")
+
+    # Validate required fields
+    if "title" not in data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing required field: title")
+
+    # Create review from imported data
+    review = Review(
+        title=data.get("title"),
+        repository_url=data.get("repository_url"),
+        base_branch=data.get("base_branch", "main"),
+        head_branch=data.get("head_branch", "HEAD"),
+        diff_content=data.get("diff_content"),
+        status=ReviewStatus(data.get("status", "pending")),
+        author_id=current_user.id,
+    )
+    db.add(review)
+    await db.flush()
+
+    # Import findings if present
+    if "findings" in data and isinstance(data["findings"], list):
+        for finding_data in data["findings"]:
+            finding = Finding(
+                review_id=review.id,
+                title=finding_data.get("title", "Untitled Finding"),
+                file_path=finding_data.get("file_path", ""),
+                start_line=finding_data.get("start_line", 1),
+                end_line=finding_data.get("end_line", 1),
+                severity=FindingSeverity(finding_data.get("severity", "info")),
+                category=FindingCategory(finding_data.get("category", "maintainability")),
+                description=finding_data.get("description", ""),
+                suggestion=finding_data.get("suggestion"),
+                rule_id=finding_data.get("rule_id"),
+                llm_explanation=finding_data.get("llm_explanation"),
+            )
+            db.add(finding)
+
+    audit = AuditLog(
+        user_id=current_user.id,
+        review_id=review.id,
+        action=AuditAction.REVIEW_CREATE,
+        details="Imported review from JSON",
+    )
+    db.add(audit)
+    await db.commit()
+
+    # Reload with findings
+    result = await db.execute(
+        select(Review)
+        .options(selectinload(Review.findings))
+        .where(Review.id == review.id)
+    )
+    review = result.scalar_one()
+    return ReviewImportResponse.model_validate(review)
 
 
 @router.post("/{review_id}/findings", response_model=FindingResponse, status_code=status.HTTP_201_CREATED)

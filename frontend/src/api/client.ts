@@ -11,6 +11,8 @@ import type {
   PaginatedReviews,
   ReviewExportRequest,
   ReviewExportResponse,
+  ReviewImportRequest,
+  ReviewImportResponse,
   Finding,
   FindingCreate,
   FindingUpdate,
@@ -155,6 +157,15 @@ class ApiClient {
     });
     return response.data;
   }
+
+  // Import
+  async importReview(data: ReviewImportRequest): Promise<ReviewImportResponse> {
+    const response = await this.client.post<ReviewImportResponse>('/reviews/import', data, {
+      headers: { 'X-CSRF-Token': this.getCsrfToken() },
+    });
+    return response.data;
+  }
+
 
   // Findings
   async createFinding(reviewId: number, data: FindingCreate): Promise<Finding> {

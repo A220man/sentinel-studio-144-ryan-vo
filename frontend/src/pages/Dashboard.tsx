@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, NavLink } from 'react-router-dom';
 import { api } from '../api';
 import { Layout } from '../components/Layout';
@@ -42,6 +42,41 @@ export function Dashboard() {
       setLoading(false);
     }
   };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      setError('Please select a JSON file');
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      // Validate JSON
+      JSON.parse(text);
+
+      await api.importReview({ content: text, format: 'json' });
+      await fetchReviews();
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        setError('Invalid JSON file');
+      } else {
+        setError(err instanceof Error ? err.message : 'Import failed');
+      }
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     setSearchParams({ ...Object.fromEntries(searchParams), page: String(newPage) });
@@ -65,14 +100,38 @@ export function Dashboard() {
           <h1 className="page-title">Code Reviews</h1>
           <p className="page-subtitle">Manage and analyze your code review results</p>
         </div>
-        <NavLink to="/reviews/new" className="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Review
-        </NavLink>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleImportClick}
+            className="btn btn-secondary"
+            aria-label="Import review from JSON file"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Import
+          </button>
+          <NavLink to="/reviews/new" className="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Review
+          </NavLink>
+        </div>
       </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".json"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        aria-label="Import review JSON file"
+      />
 
       <div className="card mb-6">
         <div className="card-body">
