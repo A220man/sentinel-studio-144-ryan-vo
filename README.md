@@ -1,4 +1,4 @@
-# Sentinel Studio — AI & Machine Learning
+# Sentinel Studio — AI & Machine Learning — Ryan Vo
 
 > Work in progress. This checkpoint may be incomplete or fail tests. See PLAN.md and STATUS.md before use.
 

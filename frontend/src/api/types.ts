@@ -152,3 +152,10 @@ export interface FindingUpdate {
   is_llm_generated?: boolean;
   llm_explanation?: string;
 }
+
+export interface ReviewImportRequest {
+  content: string;
+  format: 'json';
+}
+
+export interface ReviewImportResponse extends ReviewDetailResponse {}
