@@ -1,4 +1,4 @@
-from __future__ import annotations
+import re
 
 import json
 import os
@@ -96,6 +96,105 @@ class RulePack:
 
     def get_rules_for_language(self, language: str) -> list[Rule]:
         return [rule for rule in self.rules if language in rule.languages]
+
+
+@dataclass
+class AnalysisFinding:
+    rule_id: str
+    rule_name: str
+    description: str
+    severity: RuleSeverity
+    category: RuleCategory
+    file_path: str
+    line_start: int
+    line_end: int
+    matched_text: str
+    message: str
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "rule_id": self.rule_id,
+            "rule_name": self.rule_name,
+            "description": self.description,
+            "severity": self.severity.value,
+            "category": self.category.value,
+            "file_path": self.file_path,
+            "line_start": self.line_start,
+            "line_end": self.line_end,
+            "matched_text": self.matched_text,
+            "message": self.message,
+            "metadata": self.metadata,
+        }
+
+
+class CodeAnalyzer:
+    def __init__(self, loader: Optional[RulePackLoader] = None):
+        self.loader = loader or get_default_loader()
+
+    def analyze_file(self, file_path: str, content: str, language: str) -> list[AnalysisFinding]:
+        """Analyze a single file's content against rules for the given language."""
+        rules = self.loader.get_rules_for_language(language)
+        findings = []
+
+        for rule in rules:
+            if not rule.pattern:
+                continue
+            findings.extend(self._match_rule(content, file_path, rule))
+
+        return findings
+
+    def _match_rule(self, content: str, file_path: str, rule: Rule) -> list[AnalysisFinding]:
+        """Match a single rule's pattern against content and return findings with line numbers."""
+        findings = []
+        try:
+            pattern = re.compile(rule.pattern, re.MULTILINE)
+        except re.error:
+            return findings
+
+        lines = content.splitlines()
+        for match in pattern.finditer(content):
+            # Calculate line numbers (1-indexed)
+            line_start = content[:match.start()].count('\n') + 1
+            line_end = content[:match.end()].count('\n') + 1
+
+            # Get matched text (limited to first line for readability)
+            matched_text = match.group(0)
+            if '\n' in matched_text:
+                matched_text = matched_text.split('\n')[0]
+            matched_text = matched_text[:200]
+
+            # Format message
+            message = rule.message_template.format(description=rule.description)
+
+            findings.append(AnalysisFinding(
+                rule_id=rule.id,
+                rule_name=rule.name,
+                description=rule.description,
+                severity=rule.severity,
+                category=rule.category,
+                file_path=file_path,
+                line_start=line_start,
+                line_end=line_end,
+                matched_text=matched_text,
+                message=message,
+                metadata=rule.metadata,
+            ))
+
+        return findings
+
+    def analyze_files(self, files: dict[str, tuple[str, str]]) -> dict[str, list[AnalysisFinding]]:
+        """
+        Analyze multiple files.
+        Args:
+            files: Dict mapping file_path -> (content, language)
+        Returns:
+            Dict mapping file_path -> list of findings
+        """
+        results = {}
+        for file_path, (content, language) in files.items():
+            results[file_path] = self.analyze_file(file_path, content, language)
+        return results
 
 
 class RulePackLoader:
