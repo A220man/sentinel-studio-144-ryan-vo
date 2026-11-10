@@ -1,7 +1,7 @@
 
 {
   "schema_version": 1,
-  "current_feature": "review-import-export",
+  "current_feature": "code-review-engine",
   "features": [
     {
       "id": "core-skeleton",
@@ -90,15 +90,22 @@
     {
       "id": "code-review-engine",
       "title": "Deterministic code review engine with rule packs",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Rule pack loader for multi-language rules",
         "AST-based deterministic analyzers (NPE, SQLi, XSS, thread-safety)",
         "Line-level comment generation",
         "Diff parsing and hunk mapping"
       ],
-      "implementation": [],
-      "tests": []
+      "implementation": [
+        "backend/app/services/code_review.py",
+        "backend/app/api/routes/code_review.py",
+        "backend/app/api/__init__.py",
+        "backend/app/main.py"
+      ],
+      "tests": [
+        "backend/tests/test_code_review.py"
+      ]
     },
     {
       "id": "llm-agent-review",
