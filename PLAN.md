@@ -4,7 +4,7 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-review-import-export
+code-review-engine
 
 ## Roadmap
 
@@ -40,13 +40,17 @@ Tests: `backend/tests/test_reviews.py::test_import_review`, `backend/tests/test_
 
 ### code-review-engine — Deterministic code review engine with rule packs
 
-Status: planned
+Status: done
 
 Acceptance:
 - Rule pack loader for multi-language rules
 - AST-based deterministic analyzers (NPE, SQLi, XSS, thread-safety)
 - Line-level comment generation
 - Diff parsing and hunk mapping
+
+Implementation: `backend/app/services/code_review.py`, `backend/app/api/routes/code_review.py`, `backend/app/api/__init__.py`, `backend/app/main.py`
+
+Tests: `backend/tests/test_code_review.py`
 
 ### llm-agent-review — LLM Agent review with opt-in advisory explanations
 
