@@ -17,6 +17,7 @@ from app.services.code_review import (
 
 
 class TestRuleSeverity:
+    def test_dummy(self): pass
     def test_values(self):
         assert RuleSeverity.CRITICAL.value == "critical"
         assert RuleSeverity.HIGH.value == "high"
