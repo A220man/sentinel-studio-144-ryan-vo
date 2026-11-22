@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
-from app.api.routes import health, auth, users, reviews, code_review
+from app.api.routes import health, auth, users, reviews, code_review, llm
 
 
 @asynccontextmanager
@@ -38,6 +38,7 @@ def create_app() -> FastAPI:
     app.include_router(users.router)
     app.include_router(reviews.router)
     app.include_router(code_review.router)
+    app.include_router(llm.router)
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request, exc):
