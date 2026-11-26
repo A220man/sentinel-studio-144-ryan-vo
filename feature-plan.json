@@ -1,4 +1,3 @@
-
 {
   "schema_version": 1,
   "current_feature": "code-review-engine",
@@ -110,7 +109,7 @@
     {
       "id": "llm-agent-review",
       "title": "LLM Agent review with opt-in advisory explanations",
-      "status": "planned",
+      "status": "in_progress",
       "acceptance": [
         "OpenAI-compatible, Anthropic, Gemini, Ollama adapters",
         "Provider errors surfaced clearly",

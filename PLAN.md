@@ -54,7 +54,7 @@ Tests: `backend/tests/test_code_review.py`
 
 ### llm-agent-review — LLM Agent review with opt-in advisory explanations
 
-Status: planned
+Status: in_progress
 
 Acceptance:
 - OpenAI-compatible, Anthropic, Gemini, Ollama adapters
