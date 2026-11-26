@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.7.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
+## [1.6.1] - 2026-11-26
+
+### Added
+- LLM Agent review adapters: Anthropic, Gemini, and Ollama implementations in `backend/app/services/llm_agent.py`
+- All four provider adapters (OpenAI, Anthropic, Gemini, Ollama) follow consistent `LLMAdapter` interface
+- `LLMProviderError` for consistent error handling across providers
+- `get_adapter()` factory function supporting all four providers
+
+### Changed
+- Updated `feature-plan.json` to mark `llm-agent-review` as `in_progress`
+- Updated `PLAN.md` to reflect current feature status
+
+### Fixed
+- Completed the three previously-skeleton LLM adapter implementations
 ## 1.6.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.

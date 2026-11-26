@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentinel-studio"
-version = "1.6.0"
+version = "1.7.0"
 description = "Hybrid deterministic + LLM code review platform"
 readme = "README.md"
 license = {text = "MIT"}
